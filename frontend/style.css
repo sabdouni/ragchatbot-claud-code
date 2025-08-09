@@ -637,13 +637,6 @@ details[open] .suggested-header::before {
     color: var(--primary-color);
 }
 
-.new-chat-button::before {
-    content: '▶';
-    display: inline-block;
-    margin-right: 0.5rem;
-    transition: transform 0.2s ease;
-    font-size: 0.75rem;
-}
 
 /* Suggested Questions in Sidebar */
 .suggested-items {
