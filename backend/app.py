@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import os
 
 from config import config
@@ -40,10 +40,15 @@ class QueryRequest(BaseModel):
     query: str
     session_id: Optional[str] = None
 
+class SourceItem(BaseModel):
+    """Individual source with text and optional link"""
+    text: str
+    link: Optional[str] = None
+
 class QueryResponse(BaseModel):
     """Response model for course queries"""
     answer: str
-    sources: List[str]
+    sources: List[SourceItem]
     session_id: str
 
 class CourseStats(BaseModel):
@@ -65,9 +70,18 @@ async def query_documents(request: QueryRequest):
         # Process query using RAG system
         answer, sources = rag_system.query(request.query, session_id)
         
+        # Convert sources to SourceItem objects
+        source_items = []
+        for source in sources:
+            if isinstance(source, dict):
+                source_items.append(SourceItem(text=source["text"], link=source.get("link")))
+            else:
+                # Fallback for string sources (backwards compatibility)
+                source_items.append(SourceItem(text=str(source), link=None))
+        
         return QueryResponse(
             answer=answer,
-            sources=sources,
+            sources=source_items,
             session_id=session_id
         )
     except Exception as e:
@@ -82,6 +96,15 @@ async def get_course_stats():
             total_courses=analytics["total_courses"],
             course_titles=analytics["course_titles"]
         )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/sessions/{session_id}")
+async def clear_session(session_id: str):
+    """Clear conversation history for a specific session"""
+    try:
+        rag_system.session_manager.clear_session(session_id)
+        return {"message": f"Session {session_id} cleared successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
