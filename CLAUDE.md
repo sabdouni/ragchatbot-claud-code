@@ -55,6 +55,49 @@ uv pip list
 uv pip freeze
 ```
 
+### Code Quality & Development Tools
+
+**Quick Commands:**
+```bash
+# Run complete quality pipeline (format, lint, test)
+./scripts/quality.sh
+
+# Check code quality without making changes
+./scripts/check.sh
+
+# Format code only
+./scripts/format.sh
+
+# Run linting only  
+./scripts/lint.sh
+
+# Run tests only
+./scripts/test.sh
+```
+
+**Individual Tool Commands:**
+```bash
+# Code formatting with black
+uv run black backend/
+
+# Import sorting with isort  
+uv run isort backend/
+
+# Style checking with flake8
+uv run flake8 backend/
+
+# Type checking with mypy
+uv run mypy backend/ --ignore-missing-imports
+
+# Run tests with pytest
+cd backend && uv run pytest -v
+```
+
+**Before Committing:**
+- Always run `./scripts/quality.sh` to ensure code meets standards
+- Use `./scripts/check.sh` to verify without making changes
+- All quality checks must pass before committing code
+
 ### Application Access
 - Web Interface: http://localhost:8000
 - API Documentation: http://localhost:8000/docs
